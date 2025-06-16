@@ -13,15 +13,14 @@ The dataset used in this project is the **Labeled Faces in the Wild (LFW)** data
 
 ## Model Architecture
 
-The model is built using a **Convolutional Neural Network (CNN)** with the following architecture:
+The project uses a deeper **Convolutional Neural Network (CNN)** built with three convolutional blocks followed by fully connected layers:
 
 - **Input Layer:** 62×47 grayscale images
-- **Convolutional Layer 1:** 32 filters, ReLU activation
-- **Max Pooling Layer 1**
-- **Convolutional Layer 2:** 64 filters, ReLU activation
-- **Max Pooling Layer 2**
-- **Dropout:** 25%
-- **Fully Connected Layer:** 512 neurons with ReLU activation
+- **Conv Block 1:** 32 filters + Max Pooling
+- **Conv Block 2:** 64 filters + Max Pooling
+- **Conv Block 3:** 128 filters + Max Pooling
+- **Dropout:** 30%
+- **Dense Layer:** 256 neurons with ReLU
 - **Dropout:** 50%
 - **Output Layer:** Softmax activation for classification
 
@@ -34,7 +33,7 @@ The model is compiled using:
 
 - **Train-Test Split:** 80%-20%
 - **Batch Size:** 32
-- **Epochs:** Up to 100 with early stopping (patience 5)
+- **Epochs:** Up to 50 with early stopping (patience 5)
 - **Data Augmentation:** Rotation, shift, and horizontal flip
 
 ### Training and Validation Accuracy
@@ -63,7 +62,7 @@ A random test image is selected, and the model predicts the person's identity wi
    cd facial-recognition
    ```
 
-2. Run the Python script:
+2. Train the model (this will create `model.h5`):
    ```sh
    python facial_recognition.py
    ```
@@ -74,7 +73,7 @@ An interactive web interface is provided using **FastAPI**. It allows you to
 upload an image, performs prediction using the trained model and displays the
 result.
 
-To start the web server:
+To start the web server after training:
 
 ```sh
 pip install fastapi uvicorn[standard] pillow scikit-learn tensorflow matplotlib seaborn
@@ -83,12 +82,13 @@ python fastapi_app.py
 
 Then navigate to `http://localhost:8000` in your browser to try the demo.
 
-## Future Improvements
+## Features Added
 
-- Implement data augmentation for better generalization
-- Experiment with deeper CNN architectures
-- Optimize hyperparameters for improving the accuracy
-- Package the model so the FastAPI app can load pre-trained weights
+- Data augmentation for better generalization
+- Deeper CNN architecture with three convolutional blocks
+- Early stopping and model checkpointing for optimized training
+- FastAPI app loads pre-trained `model.h5`
+- Web interface performs optional face detection and cropping
 
 ## Author
 
