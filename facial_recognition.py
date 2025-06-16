@@ -6,9 +6,15 @@ from tensorflow.keras.utils import to_categorical
 from sklearn.model_selection import train_test_split
 from keras.models import Sequential
 from sklearn.metrics import classification_report, confusion_matrix
-from tensorflow.keras.layers import Dense, Conv2D, Flatten, MaxPooling2D, Dropout
+from tensorflow.keras.layers import (
+    Dense,
+    Conv2D,
+    Flatten,
+    MaxPooling2D,
+    Dropout,
+)
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
-from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
+from tensorflow.keras.callbacks import EarlyStopping
 from sklearn.datasets import fetch_lfw_people
 import random
 
@@ -17,7 +23,9 @@ import random
 faces = fetch_lfw_people(min_faces_per_person=100)
 image_count, image_height, image_width = faces.images.shape[:3]
 class_count = len(faces.target_names)
-print(f"Dataset contains {image_count} images of size {image_height}x{image_width} across {class_count} individuals.")
+print(
+    f"Dataset contains {image_count} images of size {image_height}x{image_width} across {class_count} individuals."
+)
 print("People in the dataset:", faces.target_names)
 
 """# Display Sample Images"""
@@ -40,31 +48,56 @@ for person, count in zip(faces.target_names[unique_targets], counts):
 
 """# Data Preprocessing"""
 
-mask = np.zeros(faces.target.shape, dtype=np.bool_)
-
+mask = np.zeros(faces.target.shape, dtype=bool)
 for target in np.unique(faces.target):
-    mask[np.where(faces.target == target)[0][:150]] = 1
+    mask[np.where(faces.target == target)[0][:150]] = True
 
-x_faces = faces.data[mask]
+x_faces = faces.images[mask]
 y_faces = faces.target[mask]
-x_faces.shape
 
-face_images = x_faces / 255
+# Reshape for CNN and normalize
+x_faces = x_faces.reshape((-1, image_height, image_width, 1)) / 255.0
+
 face_labels = to_categorical(y_faces)
 
-x_train, x_test, y_train, y_test = train_test_split(face_images, face_labels, train_size=0.8, stratify=face_labels, random_state=0)
+x_train, x_test, y_train, y_test = train_test_split(
+    x_faces,
+    face_labels,
+    train_size=0.8,
+    stratify=face_labels,
+    random_state=0,
+)
 
 """# CNN Model"""
 
 model = Sequential()
-model.add(Dense(512, activation='relu', input_shape=(image_width * image_height,)))
-model.add(Dense(class_count, activation='softmax'))
-model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+model.add(
+    Conv2D(32, (3, 3), activation="relu", input_shape=(image_height, image_width, 1))
+)
+model.add(MaxPooling2D((2, 2)))
+model.add(Conv2D(64, (3, 3), activation="relu"))
+model.add(MaxPooling2D((2, 2)))
+model.add(Dropout(0.25))
+model.add(Flatten())
+model.add(Dense(128, activation="relu"))
+model.add(Dropout(0.5))
+model.add(Dense(class_count, activation="softmax"))
+
+model.compile(optimizer="adam", loss="categorical_crossentropy", metrics=["accuracy"])
 model.summary()
 
 """# Train Model"""
 
-history = model.fit(x_train, y_train, validation_data=(x_test, y_test), epochs=100, batch_size=20)
+callbacks = [EarlyStopping(patience=10, restore_best_weights=True)]
+
+history = model.fit(
+    x_train,
+    y_train,
+    validation_data=(x_test, y_test),
+    epochs=100,
+    batch_size=20,
+    callbacks=callbacks,
+)
 
 """# Plot Training History"""
 
@@ -104,7 +137,7 @@ def predict_random_image():
     img = x_test[idx]
     true_label = faces.target_names[y_true[idx]]
     pred_label = faces.target_names[y_pred_classes[idx]]
-    img = img.reshape(62, 47)
+    img = img.squeeze()
 
     plt.imshow(img, cmap='gray')
     plt.title(f'True: {true_label}\nPredicted: {pred_label}')
