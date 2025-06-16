@@ -60,11 +60,12 @@ x_faces = x_faces.reshape((-1, image_height, image_width, 1)) / 255.0
 
 face_labels = to_categorical(y_faces)
 
+# Use integer labels for stratification to avoid ValueError
 x_train, x_test, y_train, y_test = train_test_split(
     x_faces,
     face_labels,
     train_size=0.8,
-    stratify=face_labels,
+    stratify=y_faces,  # Correct 1-D array of class labels
     random_state=0,
 )
 
