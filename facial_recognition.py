@@ -52,7 +52,17 @@ x_faces.shape
 face_images = x_faces / 255
 face_labels = to_categorical(y_faces)
 
-x_train, x_test, y_train, y_test = train_test_split(face_images, face_labels, train_size=0.8, stratify=face_labels, random_state=0)
+# ``train_test_split`` expects the ``stratify`` argument to be a 1-D array of
+# class labels. Using the one-hot encoded labels caused a ``ValueError`` at
+# runtime. The integer encoded ``y_faces`` provides the correct label vector
+# for stratification.
+x_train, x_test, y_train, y_test = train_test_split(
+    face_images,
+    face_labels,
+    train_size=0.8,
+    stratify=y_faces,
+    random_state=0,
+)
 
 """# CNN Model"""
 
