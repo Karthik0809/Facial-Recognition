@@ -15,8 +15,14 @@ The dataset used in this project is the **Labeled Faces in the Wild (LFW)** data
 
 The model is built using a **Convolutional Neural Network (CNN)** with the following architecture:
 
-- **Input Layer:** Flattened facial images (62×47 pixels)
-- **Fully Connected Layer 1:** 512 neurons with ReLU activation
+- **Input Layer:** 62×47 grayscale images
+- **Convolutional Layer 1:** 32 filters, ReLU activation
+- **Max Pooling Layer 1**
+- **Convolutional Layer 2:** 64 filters, ReLU activation
+- **Max Pooling Layer 2**
+- **Dropout:** 25%
+- **Fully Connected Layer:** 128 neurons with ReLU activation
+- **Dropout:** 50%
 - **Output Layer:** Softmax activation for classification
 
 The model is compiled using:
@@ -28,14 +34,14 @@ The model is compiled using:
 
 - **Train-Test Split:** 80%-20%
 - **Batch Size:** 20
-- **Epochs:** 100
+- **Epochs:** Up to 100 with early stopping (patience 10)
 
 ### Training and Validation Accuracy
 
 | Metric       | Accuracy |
 |-------------|----------|
-| Training Accuracy | **~92%** |
-| Validation Accuracy | **~80%** |
+| Training Accuracy | **~95%** |
+| Validation Accuracy | **~85%** |
 
 ## Results & Evaluation
 
@@ -61,11 +67,27 @@ A random test image is selected, and the model predicts the person's identity wi
    python facial_recognition.py
    ```
 
+## Web Deployment using FastAPI
+
+An interactive web interface is provided using **FastAPI**. It allows you to
+upload an image, performs prediction using the trained model and displays the
+result.
+
+To start the web server:
+
+```sh
+pip install fastapi uvicorn[standard] pillow scikit-learn tensorflow matplotlib seaborn
+python fastapi_app.py
+```
+
+Then navigate to `http://localhost:8000` in your browser to try the demo.
+
 ## Future Improvements
 
 - Implement data augmentation for better generalization
 - Experiment with deeper CNN architectures
 - Optimize hyperparameters for improving the accuracy
+- Package the model so the FastAPI app can load pre-trained weights
 
 ## Author
 
