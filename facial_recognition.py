@@ -14,7 +14,7 @@ from tensorflow.keras.layers import (
     Dropout,
 )
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
-from tensorflow.keras.callbacks import EarlyStopping
+from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
 from sklearn.datasets import fetch_lfw_people
 import random
 
@@ -71,32 +71,43 @@ x_train, x_test, y_train, y_test = train_test_split(
 
 """# CNN Model"""
 
-model = Sequential()
-model.add(
-    Conv2D(32, (3, 3), activation="relu", input_shape=(image_height, image_width, 1))
+model = Sequential(
+    [
+        Conv2D(32, (3, 3), activation="relu", input_shape=(image_height, image_width, 1)),
+        MaxPooling2D(2, 2),
+        Dropout(0.25),
+        Conv2D(64, (3, 3), activation="relu"),
+        MaxPooling2D(2, 2),
+        Dropout(0.25),
+        Flatten(),
+        Dense(512, activation="relu"),
+        Dropout(0.5),
+        Dense(class_count, activation="softmax"),
+    ]
 )
-model.add(MaxPooling2D((2, 2)))
-model.add(Conv2D(64, (3, 3), activation="relu"))
-model.add(MaxPooling2D((2, 2)))
-model.add(Dropout(0.25))
-model.add(Flatten())
-model.add(Dense(128, activation="relu"))
-model.add(Dropout(0.5))
-model.add(Dense(class_count, activation="softmax"))
 
 model.compile(optimizer="adam", loss="categorical_crossentropy", metrics=["accuracy"])
 model.summary()
 
 """# Train Model"""
 
-callbacks = [EarlyStopping(patience=10, restore_best_weights=True)]
+datagen = ImageDataGenerator(
+    rotation_range=15,
+    width_shift_range=0.1,
+    height_shift_range=0.1,
+    horizontal_flip=True,
+)
+datagen.fit(x_train)
+
+callbacks = [
+    EarlyStopping(monitor="val_loss", patience=5, restore_best_weights=True),
+    ModelCheckpoint("best_model.h5", save_best_only=True),
+]
 
 history = model.fit(
-    x_train,
-    y_train,
+    datagen.flow(x_train, y_train, batch_size=32),
     validation_data=(x_test, y_test),
     epochs=100,
-    batch_size=20,
     callbacks=callbacks,
 )
 

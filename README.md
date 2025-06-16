@@ -21,7 +21,7 @@ The model is built using a **Convolutional Neural Network (CNN)** with the follo
 - **Convolutional Layer 2:** 64 filters, ReLU activation
 - **Max Pooling Layer 2**
 - **Dropout:** 25%
-- **Fully Connected Layer:** 128 neurons with ReLU activation
+- **Fully Connected Layer:** 512 neurons with ReLU activation
 - **Dropout:** 50%
 - **Output Layer:** Softmax activation for classification
 
@@ -33,8 +33,9 @@ The model is compiled using:
 ## Training Details
 
 - **Train-Test Split:** 80%-20%
-- **Batch Size:** 20
-- **Epochs:** Up to 100 with early stopping (patience 10)
+- **Batch Size:** 32
+- **Epochs:** Up to 100 with early stopping (patience 5)
+- **Data Augmentation:** Rotation, shift, and horizontal flip
 
 ### Training and Validation Accuracy
 
