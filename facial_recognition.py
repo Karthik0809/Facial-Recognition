@@ -6,7 +6,13 @@ from tensorflow.keras.utils import to_categorical
 from sklearn.model_selection import train_test_split
 from keras.models import Sequential
 from sklearn.metrics import classification_report, confusion_matrix
-from tensorflow.keras.layers import Dense, Conv2D, Flatten, MaxPooling2D, Dropout
+from tensorflow.keras.layers import (
+    Dense,
+    Conv2D,
+    Flatten,
+    MaxPooling2D,
+    Dropout,
+)
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
 from sklearn.datasets import fetch_lfw_people
@@ -45,26 +51,58 @@ mask = np.zeros(faces.target.shape, dtype=np.bool_)
 for target in np.unique(faces.target):
     mask[np.where(faces.target == target)[0][:150]] = 1
 
-x_faces = faces.data[mask]
+x_faces = faces.images[mask][..., np.newaxis]
 y_faces = faces.target[mask]
-x_faces.shape
 
-face_images = x_faces / 255
+face_images = x_faces / 255.0
 face_labels = to_categorical(y_faces)
 
-x_train, x_test, y_train, y_test = train_test_split(face_images, face_labels, train_size=0.8, stratify=face_labels, random_state=0)
+x_train, x_test, y_train, y_test = train_test_split(
+    face_images,
+    face_labels,
+    train_size=0.8,
+    stratify=face_labels,
+    random_state=0,
+)
 
 """# CNN Model"""
 
-model = Sequential()
-model.add(Dense(512, activation='relu', input_shape=(image_width * image_height,)))
-model.add(Dense(class_count, activation='softmax'))
-model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+model = Sequential([
+    Conv2D(32, (3, 3), activation="relu", input_shape=(image_height, image_width, 1)),
+    MaxPooling2D(2, 2),
+    Dropout(0.25),
+    Conv2D(64, (3, 3), activation="relu"),
+    MaxPooling2D(2, 2),
+    Dropout(0.25),
+    Flatten(),
+    Dense(512, activation="relu"),
+    Dense(class_count, activation="softmax"),
+])
+
+model.compile(optimizer="adam", loss="categorical_crossentropy", metrics=["accuracy"])
 model.summary()
 
-"""# Train Model"""
+"""# Data Augmentation and Training"""
 
-history = model.fit(x_train, y_train, validation_data=(x_test, y_test), epochs=100, batch_size=20)
+datagen = ImageDataGenerator(
+    rotation_range=15,
+    width_shift_range=0.1,
+    height_shift_range=0.1,
+    horizontal_flip=True,
+)
+datagen.fit(x_train)
+
+callbacks = [
+    EarlyStopping(monitor="val_loss", patience=5, restore_best_weights=True),
+    ModelCheckpoint("best_model.h5", save_best_only=True),
+]
+
+history = model.fit(
+    datagen.flow(x_train, y_train, batch_size=32),
+    validation_data=(x_test, y_test),
+    epochs=100,
+    callbacks=callbacks,
+)
 
 """# Plot Training History"""
 
@@ -104,7 +142,7 @@ def predict_random_image():
     img = x_test[idx]
     true_label = faces.target_names[y_true[idx]]
     pred_label = faces.target_names[y_pred_classes[idx]]
-    img = img.reshape(62, 47)
+    img = img.reshape(image_height, image_width)
 
     plt.imshow(img, cmap='gray')
     plt.title(f'True: {true_label}\nPredicted: {pred_label}')

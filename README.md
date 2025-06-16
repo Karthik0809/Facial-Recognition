@@ -15,8 +15,11 @@ The dataset used in this project is the **Labeled Faces in the Wild (LFW)** data
 
 The model is built using a **Convolutional Neural Network (CNN)** with the following architecture:
 
-- **Input Layer:** Flattened facial images (62×47 pixels)
-- **Fully Connected Layer 1:** 512 neurons with ReLU activation
+- **Conv Layer 1:** 32 filters with ReLU activation
+- **Max Pooling + Dropout**
+- **Conv Layer 2:** 64 filters with ReLU activation
+- **Max Pooling + Dropout**
+- **Fully Connected Layer:** 512 neurons with ReLU activation
 - **Output Layer:** Softmax activation for classification
 
 The model is compiled using:
@@ -27,8 +30,8 @@ The model is compiled using:
 ## Training Details
 
 - **Train-Test Split:** 80%-20%
-- **Batch Size:** 20
-- **Epochs:** 100
+- **Batch Size:** 32
+- **Epochs:** Up to 100 with Early Stopping
 
 ### Training and Validation Accuracy
 
@@ -63,9 +66,8 @@ A random test image is selected, and the model predicts the person's identity wi
 
 ## Future Improvements
 
-- Implement data augmentation for better generalization
-- Experiment with deeper CNN architectures
 - Optimize hyperparameters for improving the accuracy
+- Explore additional regularization techniques
 
 ## Author
 
