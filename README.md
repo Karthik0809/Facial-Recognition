@@ -61,11 +61,27 @@ A random test image is selected, and the model predicts the person's identity wi
    python facial_recognition.py
    ```
 
+## Web Deployment using FastAPI
+
+An interactive web interface is provided using **FastAPI**. It allows you to
+upload an image, performs prediction using the trained model and displays the
+result.
+
+To start the web server:
+
+```sh
+pip install fastapi uvicorn[standard] pillow scikit-learn tensorflow matplotlib seaborn
+python fastapi_app.py
+```
+
+Then navigate to `http://localhost:8000` in your browser to try the demo.
+
 ## Future Improvements
 
 - Implement data augmentation for better generalization
 - Experiment with deeper CNN architectures
 - Optimize hyperparameters for improving the accuracy
+- Package the model so the FastAPI app can load pre-trained weights
 
 ## Author
 
